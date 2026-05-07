@@ -1,0 +1,38 @@
+Bootstrap: docker
+From: nvidia/cuda:12.4.1-devel-ubuntu22.04
+
+%labels
+    Author HPC-GPU-Quantum-Thesis-Team
+    Project HPC-GPU-Quantum-Container
+    Description Separate CUDA-Q image for hybrid quantum-classical experiments
+
+%post
+    set -eux
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        python3-dev \
+        build-essential \
+        git \
+        wget \
+        curl \
+        ca-certificates
+    python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
+    python3 -m pip install --no-cache-dir numpy pytest cudaq
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+%environment
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+    export PATH=/usr/local/cuda/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    export PYTHONPATH=/workspace/src:$PYTHONPATH
+
+%runscript
+    echo "CUDA-Q container is ready."
+    python3 - <<'PY'
+import cudaq
+print('CUDA-Q import OK')
+PY

@@ -1,0 +1,26 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author HPC-GPU-Quantum-Thesis-Team
+    Project HPC-GPU-Quantum-Container
+    Description CPU MPI Apptainer image for scheduler and MPI smoke testing
+
+%post
+    set -eux
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        python3 python3-pip python3-dev build-essential git curl ca-certificates \
+        openmpi-bin libopenmpi-dev libibverbs1 ibverbs-providers rdma-core pciutils
+    python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
+    python3 -m pip install --no-cache-dir numpy pytest qiskit qiskit-aer mpi4py
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+%environment
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+    export PYTHONPATH=/workspace/src:$PYTHONPATH
+
+%runscript
+    python3 -m hpcq.sysinfo

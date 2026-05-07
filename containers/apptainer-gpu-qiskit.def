@@ -1,0 +1,61 @@
+Bootstrap: docker
+From: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+
+%labels
+    Author HPC-GPU-Quantum-Thesis-Team
+    Project HPC-GPU-Quantum-Container
+    Description CUDA 12 + Python + PyTorch + Qiskit Aer GPU + PennyLane Lightning GPU + MPI container for HPC experiments
+
+%post
+    set -eux
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        python3-venv \
+        python3-dev \
+        build-essential \
+        git \
+        wget \
+        curl \
+        ca-certificates \
+        openmpi-bin \
+        libopenmpi-dev \
+        pciutils
+    python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
+    python3 -m pip install --no-cache-dir \
+        numpy \
+        pytest \
+        torch \
+        qiskit \
+        qiskit-aer-gpu \
+        pennylane \
+        pennylane-lightning-gpu \
+        mpi4py \
+        cirq
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+%environment
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+    export PATH=/usr/local/cuda/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    export PYTHONPATH=/workspace/src:$PYTHONPATH
+
+%runscript
+    echo "HPC GPU Quantum container is ready."
+    echo "Python: $(python3 --version)"
+    echo "CUDA path: /usr/local/cuda"
+    nvidia-smi || true
+
+%test
+    python3 - <<'PY'
+import numpy
+print('numpy OK', numpy.__version__)
+try:
+    import qiskit
+    print('qiskit OK')
+except Exception as exc:
+    print('qiskit import warning:', exc)
+PY
