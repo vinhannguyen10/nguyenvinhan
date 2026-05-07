@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hpcq-gpu-quantum-smoke
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: hpcq
+          image: hpcq-gpu:dev
+          imagePullPolicy: IfNotPresent
+          command: ["python3", "-m", "hpcq.run_suite"]
+          args: ["--output-dir", "/workspace/results/k8s", "--device", "auto", "--matrix-size", "1024", "--qiskit-qubits", "10", "--qiskit-depth", "2"]
+          resources:
+            limits:
+              nvidia.com/gpu: 1

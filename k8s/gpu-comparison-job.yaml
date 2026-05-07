@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hpcq-gpu-comparison
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: hpcq-gpu
+          image: hpcq-gpu:dev
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |
+              mkdir -p /workspace/results/k8s_gpu
+              nvidia-smi || true
+              python3 -m hpcq.run_suite \
+                --output-dir /workspace/results/k8s_gpu \
+                --device gpu \
+                --matrix-size 1024 \
+                --qiskit-qubits 14 \
+                --include-ai \
+                --include-cirq \
+                --include-qaoa \
+                --include-energy
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+            requests:
+              cpu: "2"
+              memory: "8Gi"

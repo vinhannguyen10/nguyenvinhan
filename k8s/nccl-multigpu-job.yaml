@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hpcq-nccl-multigpu
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: nccl
+          image: hpcq-gpu:dev
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NCCL_DEBUG
+              value: INFO
+            - name: MASTER_ADDR
+              value: "127.0.0.1"
+            - name: MASTER_PORT
+              value: "29501"
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |
+              mkdir -p /workspace/results/k8s_nccl
+              python3 -m torch.distributed.run \
+                --nproc_per_node=2 \
+                --master_port=29501 \
+                -m hpcq.nccl_bench \
+                --backend nccl \
+                --elements 1000000 \
+                --iterations 20 \
+                --output /workspace/results/k8s_nccl/nccl_rank0.json
+          resources:
+            limits:
+              nvidia.com/gpu: 2
+            requests:
+              cpu: "4"
+              memory: "16Gi"
