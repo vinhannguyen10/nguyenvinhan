@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hpc-gpu-quantum-container"
+version = "0.2.0"
+description = "Reference code for HPC-native GPU, MPI, NCCL, energy, and quantum/hybrid container experiments."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "HPC GPU Quantum Thesis Team"}]
+dependencies = [
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+cpu = [
+    "pytest>=8.0",
+    "qiskit>=1.0",
+    "qiskit-aer>=0.14",
+    "mpi4py>=3.1",
+]
+gpu-cu12 = [
+    "pytest>=8.0",
+    "torch>=2.2",
+    "qiskit>=1.0",
+    "qiskit-aer-gpu>=0.14",
+    "pennylane>=0.36",
+    "pennylane-lightning-gpu>=0.36",
+    "mpi4py>=3.1",
+    "cirq>=1.4",
+]
+quantum-extra = [
+    "cirq>=1.4",
+    "cudaq>=0.9; platform_system == 'Linux'",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+    "mypy>=1.8",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
